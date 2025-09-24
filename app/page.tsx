@@ -1,48 +1,51 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { Flame, Bitcoin, CandlestickChart, Gift } from "lucide-react";
 
-// Mobile‑first, single‑file Next.js page component
-// Adapts your lofi shop UX into the previously built landing:
-// - Keeps SOLD OUT banner, countdown, email capture
-// - Adds pricing, bundles, shipping logic, optional tithing + custom ticker
-// - Routes checkout to Stripe (USD) or Coinbase Commerce (USDC/crypto)
-// - No shadcn dependency required (pure Tailwind + lucide-react)
+/* ============================
+   MODULE-SCOPE CONSTANTS / TYPES
+   (avoids hook dep warnings)
+============================ */
+const BASE_PRICE = 4.2 as const; // USD
+
+const SHIPPING_RATES: Record<string, number> = {
+  usa: 6.9,
+  canada: 11.9,
+  europe: 16.9,
+  asia: 16.9,
+  oceania: 18.9,
+  other: 21.9,
+} as const;
+
+type Payment = "usd" | "crypto";
+function isPayment(v: string): v is Payment {
+  return v === "usd" || v === "crypto";
+}
+
+// Environment links (set in Vercel → Project Settings → Environment Variables)
+const STRIPE_LINK = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || "#";
+const COINBASE_LINK = process.env.NEXT_PUBLIC_COINBASE_CHECKOUT_URL || "#";
 
 export default function GodCandle() {
-  // ====== STATE ======
+  /* ====== STATE ====== */
   const [quantity, setQuantity] = useState(1);
-  const [shippingRegion, setShippingRegion] = useState("usa");
+  const [shippingRegion, setShippingRegion] = useState<string>("usa");
   const [isCustom, setIsCustom] = useState(false);
   const [customTicker, setCustomTicker] = useState("");
   const [isBearish, setIsBearish] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"usd" | "crypto">("usd");
+  const [paymentMethod, setPaymentMethod] = useState<Payment>("usd");
   const [tithingAmount, setTithingAmount] = useState<string>("0");
 
-  // ====== CONFIG ======
-  const basePrice = 4.2; // USD
-  const shippingRates: Record<string, number> = {
-    usa: 6.9,
-    canada: 11.9,
-    europe: 16.9,
-    asia: 16.9,
-    oceania: 18.9,
-    other: 21.9,
-  };
-
-  // Env links (set in Vercel → Project Settings → Environment Variables)
-  const STRIPE_LINK = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || "#";
-  const COINBASE_LINK = process.env.NEXT_PUBLIC_COINBASE_CHECKOUT_URL || "#";
-
-  // ====== DERIVED ======
+  /* ====== DERIVED ====== */
   const pricePerUnit = useMemo(() => {
-    if (quantity >= 12) return basePrice * 0.85; // 15% off
-    if (quantity >= 4) return basePrice * 0.92; // 8% off
-    return basePrice;
+    if (quantity >= 12) return BASE_PRICE * 0.85; // 15% off
+    if (quantity >= 4) return BASE_PRICE * 0.92; // 8% off
+    return BASE_PRICE;
   }, [quantity]);
 
   const shippingCost = useMemo(() => {
-    const base = shippingRates[shippingRegion] ?? shippingRates.other;
+    const base = SHIPPING_RATES[shippingRegion] ?? SHIPPING_RATES.other;
     return base + Math.max(0, quantity - 1) * 2; // +$2 per additional item
   }, [shippingRegion, quantity]);
 
@@ -51,7 +54,7 @@ export default function GodCandle() {
   const itemsCost = pricePerUnit * quantity;
   const total = (itemsCost + customCost + shippingCost + tithing).toFixed(2);
 
-  // ====== COUNTDOWN ======
+  /* ====== COUNTDOWN ====== */
   useEffect(() => {
     const el = document.getElementById("countdown");
     if (!el) return;
@@ -69,14 +72,14 @@ export default function GodCandle() {
     return () => clearInterval(id);
   }, []);
 
-  // ====== UI HELPERS ======
-  const moodBg = isBearish ? "bg-red-50" : "bg-emerald-50";
+  /* ====== THEME HELPERS ====== */
   const moodText = isBearish ? "text-red-700" : "text-emerald-700";
+  const summaryBg = isBearish ? "bg-red-100/10" : "bg-emerald-100/10";
   const btnMood = isBearish
     ? "bg-red-600 hover:bg-red-700 focus-visible:outline-red-700"
     : "bg-emerald-600 hover:bg-emerald-700 focus-visible:outline-emerald-700";
 
-  // ====== ACTIONS ======
+  /* ====== ACTIONS ====== */
   const handleCheckout = () => {
     const url = paymentMethod === "usd" ? STRIPE_LINK : COINBASE_LINK;
     if (!url || url === "#") {
@@ -95,7 +98,9 @@ export default function GodCandle() {
             <span>🔥 BATCH 1: SOLD OUT</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">God Candle</h1>
-          <p className="mt-2 text-zinc-300">Digital‑first pre‑orders. Launching Oct 1, 2025.</p>
+          <p className="mt-2 text-zinc-300">
+            Digital-first pre-orders. Launching Oct 1, 2025.
+          </p>
           <p id="countdown" className="mt-3 text-lg font-semibold" />
         </div>
 
@@ -107,7 +112,7 @@ export default function GodCandle() {
               paymentMethod === "usd" ? "ring-2 ring-white" : ""
             }`}
           >
-            Pre‑Order (Card/Apple Pay)
+            Pre-Order (Card/Apple Pay)
           </button>
           <button
             onClick={() => setPaymentMethod("crypto")}
@@ -115,7 +120,7 @@ export default function GodCandle() {
               paymentMethod === "crypto" ? "ring-2 ring-emerald-300" : ""
             }`}
           >
-            Pre‑Order (USDC/ETH/BTC)
+            Pre-Order (USDC/ETH/BTC)
           </button>
         </div>
 
@@ -143,13 +148,15 @@ export default function GodCandle() {
 
       {/* PRODUCT CARD (mobile-first) */}
       <section className="mx-auto max-w-xl px-4 pb-16">
-        <div className={`rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6 ${moodBg.replace("bg-", "bg-opacity-10 bg-")}`}>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
           {/* Title */}
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold">The Almighty Candle</h2>
               <p className={`mt-1 text-sm ${moodText}`}>
-                {isBearish ? "Summoning the Ultimate Rug Pull 📉" : "Manifesting the Mother of All Squeezes 📈"}
+                {isBearish
+                  ? "Summoning the Ultimate Rug Pull 📉"
+                  : "Manifesting the Mother of All Squeezes 📈"}
               </p>
             </div>
             <Flame className={isBearish ? "text-red-400" : "text-emerald-300"} size={24} />
@@ -157,7 +164,9 @@ export default function GodCandle() {
 
           {/* Mood toggle */}
           <div className="mb-4 flex items-center justify-between gap-3">
-            <label htmlFor="bear" className="text-sm text-zinc-300">Bear Mode</label>
+            <label htmlFor="bear" className="text-sm text-zinc-300">
+              Bear Mode
+            </label>
             <button
               id="bear"
               type="button"
@@ -222,6 +231,7 @@ export default function GodCandle() {
                 Add Custom Memecoin Blessing (+$5)
               </label>
             </div>
+
             {isCustom && (
               <div>
                 <label className="block text-sm text-zinc-300">Your Memecoin Ticker</label>
@@ -241,7 +251,10 @@ export default function GodCandle() {
               <select
                 className="mt-1 w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-white"
                 value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as any)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setPaymentMethod(isPayment(v) ? v : "usd");
+                }}
               >
                 <option value="usd">USD (Card/Apple Pay)</option>
                 <option value="crypto">Crypto (USDC/ETH/BTC via Coinbase)</option>
@@ -267,7 +280,7 @@ export default function GodCandle() {
             </div>
 
             {/* Summary */}
-            <div className={`rounded-md p-4 ${isBearish ? "bg-red-100/10" : "bg-emerald-100/10"}`}>
+            <div className={`rounded-md p-4 ${summaryBg}`}>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-300">Price per candle</span>
                 <span className="font-semibold">${pricePerUnit.toFixed(2)}</span>
@@ -301,12 +314,21 @@ export default function GodCandle() {
               onClick={handleCheckout}
               className={`mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold ${btnMood}`}
             >
-              {paymentMethod === "usd" ? <CandlestickChart className="-ml-1" /> : <Bitcoin className="-ml-1" />}
+              {paymentMethod === "usd" ? (
+                <CandlestickChart className="-ml-1" />
+              ) : (
+                <Bitcoin className="-ml-1" />
+              )}
               Place Blessed Order
             </button>
 
-            <p className={`mt-3 text-center text-xs ${isBearish ? "text-red-400" : "text-emerald-300"}`}>
-              ⚠️ Pre-orders fund production. 4–6 week delivery. Full refunds available until fulfillment begins.
+            <p
+              className={`mt-3 text-center text-xs ${
+                isBearish ? "text-red-400" : "text-emerald-300"
+              }`}
+            >
+              ⚠️ Pre-orders fund production. 4–6 week delivery. Full refunds available until
+              fulfillment begins.
             </p>
           </div>
         </div>
@@ -314,10 +336,22 @@ export default function GodCandle() {
         {/* Footer notes */}
         <div className="mt-8 space-y-2 text-center text-xs text-zinc-500">
           <p>Past performance of prayer candles does not guarantee future results.</p>
-          <p>Each candle blessed with genuine {isBearish ? "FUD" : "copium"} ✨</p>
+          <p>
+            Each candle blessed with genuine {isBearish ? "FUD" : "copium"} ✨
+          </p>
           <p>We ship worldwide (additional fees may apply).</p>
           <p className="mt-2">
-            <a href="/terms" className="underline">Terms</a> · <a href="/refunds" className="underline">Refunds</a> · <a href="/contact" className="underline">Contact</a>
+            <a href="/terms" className="underline">
+              Terms
+            </a>{" "}
+            ·{" "}
+            <a href="/refunds" className="underline">
+              Refunds
+            </a>{" "}
+            ·{" "}
+            <a href="/contact" className="underline">
+              Contact
+            </a>
           </p>
         </div>
       </section>
