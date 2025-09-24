@@ -5,7 +5,6 @@ import { Flame, Bitcoin, CandlestickChart, Gift } from "lucide-react";
 
 /* ============================
    MODULE-SCOPE CONSTANTS / TYPES
-   (avoids hook dep warnings)
 ============================ */
 const BASE_PRICE = 4.2 as const; // USD
 
@@ -40,7 +39,7 @@ export default function GodCandle() {
   /* ====== DERIVED ====== */
   const pricePerUnit = useMemo(() => {
     if (quantity >= 12) return BASE_PRICE * 0.85; // 15% off
-    if (quantity >= 4) return BASE_PRICE * 0.92; // 8% off
+    if (quantity >= 4) return BASE_PRICE * 0.92;  // 8% off
     return BASE_PRICE;
   }, [quantity]);
 
@@ -98,9 +97,7 @@ export default function GodCandle() {
             <span>🔥 BATCH 1: SOLD OUT</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">God Candle</h1>
-          <p className="mt-2 text-zinc-300">
-            Digital-first pre-orders. Launching Oct 1, 2025.
-          </p>
+          <p className="mt-2 text-zinc-300">Digital-first pre-orders. Launching Oct 1, 2025.</p>
           <p id="countdown" className="mt-3 text-lg font-semibold" />
         </div>
 
@@ -154,9 +151,7 @@ export default function GodCandle() {
             <div>
               <h2 className="text-xl font-semibold">The Almighty Candle</h2>
               <p className={`mt-1 text-sm ${moodText}`}>
-                {isBearish
-                  ? "Summoning the Ultimate Rug Pull 📉"
-                  : "Manifesting the Mother of All Squeezes 📈"}
+                {isBearish ? "Summoning the Ultimate Rug Pull 📉" : "Manifesting the Mother of All Squeezes 📈"}
               </p>
             </div>
             <Flame className={isBearish ? "text-red-400" : "text-emerald-300"} size={24} />
@@ -164,9 +159,7 @@ export default function GodCandle() {
 
           {/* Mood toggle */}
           <div className="mb-4 flex items-center justify-between gap-3">
-            <label htmlFor="bear" className="text-sm text-zinc-300">
-              Bear Mode
-            </label>
+            <label htmlFor="bear" className="text-sm text-zinc-300">Bear Mode</label>
             <button
               id="bear"
               type="button"
@@ -231,7 +224,6 @@ export default function GodCandle() {
                 Add Custom Memecoin Blessing (+$5)
               </label>
             </div>
-
             {isCustom && (
               <div>
                 <label className="block text-sm text-zinc-300">Your Memecoin Ticker</label>
@@ -314,21 +306,12 @@ export default function GodCandle() {
               onClick={handleCheckout}
               className={`mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold ${btnMood}`}
             >
-              {paymentMethod === "usd" ? (
-                <CandlestickChart className="-ml-1" />
-              ) : (
-                <Bitcoin className="-ml-1" />
-              )}
+              {paymentMethod === "usd" ? <CandlestickChart className="-ml-1" /> : <Bitcoin className="-ml-1" />}
               Place Blessed Order
             </button>
 
-            <p
-              className={`mt-3 text-center text-xs ${
-                isBearish ? "text-red-400" : "text-emerald-300"
-              }`}
-            >
-              ⚠️ Pre-orders fund production. 4–6 week delivery. Full refunds available until
-              fulfillment begins.
+            <p className={`mt-3 text-center text-xs ${isBearish ? "text-red-400" : "text-emerald-300"}`}>
+              ⚠️ Pre-orders fund production. 4–6 week delivery. Full refunds available until fulfillment begins.
             </p>
           </div>
         </div>
@@ -336,22 +319,10 @@ export default function GodCandle() {
         {/* Footer notes */}
         <div className="mt-8 space-y-2 text-center text-xs text-zinc-500">
           <p>Past performance of prayer candles does not guarantee future results.</p>
-          <p>
-            Each candle blessed with genuine {isBearish ? "FUD" : "copium"} ✨
-          </p>
+          <p>Each candle blessed with genuine {isBearish ? "FUD" : "copium"} ✨</p>
           <p>We ship worldwide (additional fees may apply).</p>
           <p className="mt-2">
-            <a href="/terms" className="underline">
-              Terms
-            </a>{" "}
-            ·{" "}
-            <a href="/refunds" className="underline">
-              Refunds
-            </a>{" "}
-            ·{" "}
-            <a href="/contact" className="underline">
-              Contact
-            </a>
+            <a href="/terms" className="underline">Terms</a> · <a href="/refunds" className="underline">Refunds</a> · <a href="/contact" className="underline">Contact</a>
           </p>
         </div>
       </section>
